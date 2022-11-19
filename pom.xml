@@ -7,9 +7,9 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.antmedia.webrtc</groupId>
-	<artifactId>StreamApp</artifactId>
+	<artifactId>DuetMaster</artifactId>
 	<packaging>war</packaging>
-	<name>StreamApp Maven Webapp</name>
+	<name>DuetMaster Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,7 +39,7 @@
 		</repository>
 	</distributionManagement>
 	<build>
-		<finalName>StreamApp</finalName>
+		<finalName>DuetMaster</finalName>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<plugins>
 			<plugin>
@@ -244,7 +244,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<description>StreamApp for Ant Media Server</description>
+	<description>DuetMaster for Ant Media Server</description>
 	<organization>
 		<name>Ant Media</name>
 		<url>http://antmedia.io</url>

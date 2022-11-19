@@ -1,1 +1,0 @@
-typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"io.antmedia.enterprise.streamapp","l":"AMSEndpointConfigurator"},{"p":"io.antmedia.enterprise.streamapp","l":"WebSocketLocalHandler"},{"p":"io.antmedia.enterprise.streamapp","l":"WebSocketSignalingLocalHandler"}];updateSearchResults();
