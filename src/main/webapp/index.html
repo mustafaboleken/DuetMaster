@@ -49,79 +49,52 @@
     import {WebRTCAdaptor} from "./js/webrtc_adaptor.js"
     import MidiTranslator from "./js/external/MidiTranslator.js";
 
-    var CHROMATIC = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+    const CHROMATIC = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 
-    function midiNumberToNoteName(midiNumber) {
-        if (isNaN(midiNumber) || midiNumber < 0 || midiNumber > 127) return null
-        var name = CHROMATIC[midiNumber % 12]
-        var oct = Math.floor(midiNumber / 12) - 1
-        return {note: name, octave: oct}
-    }
+    const sampler = new Tone.Sampler({
+        urls: {
+            A0: "A0.mp3",
+            C1: "C1.mp3",
+            "D#1": "Ds1.mp3",
+            "F#1": "Fs1.mp3",
+            A1: "A1.mp3",
+            C2: "C2.mp3",
+            "D#2": "Ds2.mp3",
+            "F#2": "Fs2.mp3",
+            A2: "A2.mp3",
+            C3: "C3.mp3",
+            "D#3": "Ds3.mp3",
+            "F#3": "Fs3.mp3",
+            A3: "A3.mp3",
+            C4: "C4.mp3",
+            "D#4": "Ds4.mp3",
+            "F#4": "Fs4.mp3",
+            A4: "A4.mp3",
+            C5: "C5.mp3",
+            "D#5": "Ds5.mp3",
+            "F#5": "Fs5.mp3",
+            A5: "A5.mp3",
+            C6: "C6.mp3",
+            "D#6": "Ds6.mp3",
+            "F#6": "Fs6.mp3",
+            A6: "A6.mp3",
+            C7: "C7.mp3",
+            "D#7": "Ds7.mp3",
+            "F#7": "Fs7.mp3",
+            A7: "A7.mp3",
+            C8: "C8.mp3"
+        },
+
+        release: 10,
+
+        baseUrl: "https://tonejs.github.io/audio/salamander/"
+    }).toDestination();
 
     let midiTranslator = new MidiTranslator();
 
-    function getUrlParameter(name) {
-        let query = window.location.search;
-        const urlParams = new URLSearchParams(query);
-
-        return urlParams.get(name);
-    }
-
     var roomId = getUrlParameter("room");
+
     let midi = null;
-
-    function onMIDISuccess(midiAccess) {
-        console.log("MIDI ready!");
-        midi = midiAccess;
-        listInputsAndOutputs(midi);
-    }
-
-    function onMIDIFailure(msg) {
-        console.error(`Failed to get MIDI access - ${msg}`);
-    }
-
-    navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
-
-    function listInputsAndOutputs(midiAccess) {
-        for (const entry of midiAccess.inputs) {
-            const input = entry[1];
-            console.log(`Input port [type:'${input.type}']` +
-                ` id:'${input.id}'` +
-                ` manufacturer:'${input.manufacturer}'` +
-                ` name:'${input.name}'` +
-                ` version:'${input.version}'`);
-            startLoggingMIDIInput(midiAccess, input);
-        }
-
-        for (const entry of midiAccess.outputs) {
-            const output = entry[1];
-            console.log(`Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`);
-        }
-    }
-
-    function onMIDIMessage(event) {
-        let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]: `;
-        for (const character of event.data) {
-            str += `0x${character.toString(16)} `;
-        }
-        console.log(str);
-
-        const msg = midiTranslator.translate(Array.from(event.data));
-        console.log(msg);
-        let noteNumber = midiNumberToNoteName(msg.note);
-        if (msg.status === "NOTE_ON") {
-            pressKeyLocal(noteNumber, true);
-        } else if (msg.status === "NOTE_OFF") {
-            pressKeyLocal(noteNumber, false);
-        }
-        console.log(noteNumber);
-    }
-
-    function startLoggingMIDIInput(midiAccess, indexOfPort) {
-        midiAccess.inputs.forEach((entry) => {
-            entry.onmidimessage = onMIDIMessage;
-        });
-    }
 
     var appName = location.pathname.substring(0, location.pathname.lastIndexOf("/") + 1);
     var websocketURL = "ws://" + location.hostname + ":5080" + appName + "websocket";
@@ -179,12 +152,6 @@
         }
     });
 
-    function handleMessage(message) {
-        let receivedKeys = JSON.parse(message);
-        console.log("message received: " + receivedKeys);
-        pressKeyRemote(receivedKeys, true);
-    }
-
     const programmablePiano = document.getElementById("programmable-piano");
 
     programmablePiano.addEventListener("note-down", (event) => {
@@ -197,44 +164,76 @@
         pressKeyLocal(event.detail, false);
     });
 
-    const sampler = new Tone.Sampler({
-        urls: {
-            A0: "A0.mp3",
-            C1: "C1.mp3",
-            "D#1": "Ds1.mp3",
-            "F#1": "Fs1.mp3",
-            A1: "A1.mp3",
-            C2: "C2.mp3",
-            "D#2": "Ds2.mp3",
-            "F#2": "Fs2.mp3",
-            A2: "A2.mp3",
-            C3: "C3.mp3",
-            "D#3": "Ds3.mp3",
-            "F#3": "Fs3.mp3",
-            A3: "A3.mp3",
-            C4: "C4.mp3",
-            "D#4": "Ds4.mp3",
-            "F#4": "Fs4.mp3",
-            A4: "A4.mp3",
-            C5: "C5.mp3",
-            "D#5": "Ds5.mp3",
-            "F#5": "Fs5.mp3",
-            A5: "A5.mp3",
-            C6: "C6.mp3",
-            "D#6": "Ds6.mp3",
-            "F#6": "Fs6.mp3",
-            A6: "A6.mp3",
-            C7: "C7.mp3",
-            "D#7": "Ds7.mp3",
-            "F#7": "Fs7.mp3",
-            A7: "A7.mp3",
-            C8: "C8.mp3"
-        },
+    function midiNumberToNoteName(midiNumber) {
+        if (isNaN(midiNumber) || midiNumber < 0 || midiNumber > 127) return null
+        let name = CHROMATIC[midiNumber % 12]
+        let oct = Math.floor(midiNumber / 12) - 1
+        return {note: name, octave: oct}
+    }
 
-        release: 10,
+    function getUrlParameter(name) {
+        let query = window.location.search;
+        const urlParams = new URLSearchParams(query);
 
-        baseUrl: "https://tonejs.github.io/audio/salamander/"
-    }).toDestination();
+        return urlParams.get(name);
+    }
+
+    function onMIDISuccess(midiAccess) {
+        console.log("MIDI ready!");
+        midi = midiAccess;
+        listInputsAndOutputs(midi);
+    }
+
+    function onMIDIFailure(msg) {
+        console.error(`Failed to get MIDI access - ${msg}`);
+    }
+
+    function listInputsAndOutputs(midiAccess) {
+        for (const entry of midiAccess.inputs) {
+            const input = entry[1];
+            console.log(`Input port [type:'${input.type}']` +
+                ` id:'${input.id}'` +
+                ` manufacturer:'${input.manufacturer}'` +
+                ` name:'${input.name}'` +
+                ` version:'${input.version}'`);
+            startLoggingMIDIInput(midiAccess, input);
+        }
+
+        for (const entry of midiAccess.outputs) {
+            const output = entry[1];
+            console.log(`Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`);
+        }
+    }
+
+    function onMIDIMessage(event) {
+        let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]: `;
+        for (const character of event.data) {
+            str += `0x${character.toString(16)} `;
+        }
+        console.log(str);
+
+        const msg = midiTranslator.translate(Array.from(event.data));
+        console.log(msg);
+        let noteNumber = midiNumberToNoteName(msg.note);
+        if (msg.status === "NOTE_ON") {
+            pressKeyLocal(noteNumber, true);
+        } else if (msg.status === "NOTE_OFF") {
+            pressKeyLocal(noteNumber, false);
+        }
+        console.log(noteNumber);
+    }
+
+    function startLoggingMIDIInput(midiAccess, indexOfPort) {
+        midiAccess.inputs.forEach((entry) => {
+            entry.onmidimessage = onMIDIMessage;
+        });
+    }
+
+    function handleMessage(message) {
+        let receivedKeys = JSON.parse(message);
+        console.log("message received: " + receivedKeys);
+        pressKeyRemote(receivedKeys, true);
+    }
 
     function pressKeyLocal(key, isDown) {
         if (isDown) {
@@ -262,6 +261,8 @@
             }
         }), 1000);
     }
+
+    navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
 
 </script>
 </html>
