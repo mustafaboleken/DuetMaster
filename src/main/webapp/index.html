@@ -102,10 +102,7 @@
     if (location.protocol.startsWith("https")) {
         websocketURL = "wss://" + location.hostname + ":5443" + appName + "websocket";
     }
-
-    var local_video = document.getElementById("localVideoDiv");
-    var remote_video = document.getElementById("remoteVideoDiv");
-
+    
     var debug = true;
     var sdpConstraints = {
         OfferToReceiveAudio: true,
