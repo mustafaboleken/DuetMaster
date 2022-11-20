@@ -65,7 +65,7 @@
         const urlParams = new URLSearchParams(query);
 
         return urlParams.get(name);
-    };
+    }
 
     var roomId = getUrlParameter("room");
     let midi = null;
@@ -197,31 +197,6 @@
         pressKeyInteractive(event.detail, false);
     });
 
-    const chords = [[{note: "C", octave: 2}, {note: "E", octave: 2}, {note: "G", octave: 2}], [{
-        note: "B",
-        octave: 2
-    }, {note: "D#", octave: 2}, {note: "G", octave: 2}], [{note: "A", octave: 2}, {note: "D", octave: 2}, {
-        note: "G#",
-        octave: 4
-    }]];
-    let previousChord = [];
-    let currentChord = 0;
-
-    function playChord() {
-
-        previousChord.forEach((key) => {
-            programmablePiano.setNoteUp(key.note, key.octave);
-        });
-
-        chords[currentChord].forEach((key) => {
-            programmablePiano.setNoteDown(key.note, key.octave);
-        });
-
-        previousChord = chords[currentChord];
-        currentChord = currentChord + 1;
-        if (currentChord >= chords.length) currentChord = 0;
-    }
-
     const sampler = new Tone.Sampler({
         urls: {
             A0: "A0.mp3",
@@ -261,18 +236,11 @@
         baseUrl: "https://tonejs.github.io/audio/salamander/"
     }).toDestination();
 
-    function playSample() {
-        setTimeout((() => {
-            pressKey([{note: "A", octave: 4}, {note: "C", octave: 5}], false);
-            setTimeout((() => {
-                pressKey([{note: "A", octave: 6}, {note: "C", octave: 8}], false);
-            }), 2500);
-        }), 2500);
-    }
-
     function pressKeyInteractive(key, isDown) {
         if (isDown) {
-            webRTCAdaptor.sendData(roomId, JSON.stringify([key]));
+            if (webRTCAdaptor.remotePeerConnection[roomId] !== undefined) {
+                webRTCAdaptor.sendData(roomId, JSON.stringify([key]));
+            }
             programmablePiano.setNoteDown(key.note, key.octave);
             sampler.triggerAttack(key.note + key.octave);
         } else {
@@ -282,7 +250,7 @@
     }
 
     function pressKey(keyMap, isReceived) {
-        if (!isReceived) {
+        if (!isReceived && webRTCAdaptor.remotePeerConnection[roomId] !== undefined) {
             webRTCAdaptor.sendData(roomId, JSON.stringify(keyMap));
         }
         for (let keyIndex in keyMap) {
