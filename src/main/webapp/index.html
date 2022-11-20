@@ -110,9 +110,9 @@
         console.log(msg);
         let noteNumber = midiNumberToNoteName(msg.note);
         if (msg.status === "NOTE_ON") {
-            pressKeyInteractive(noteNumber, true);
+            pressKeyLocal(noteNumber, true);
         } else if (msg.status === "NOTE_OFF") {
-            pressKeyInteractive(noteNumber, false);
+            pressKeyLocal(noteNumber, false);
         }
         console.log(noteNumber);
     }
@@ -182,19 +182,19 @@
     function handleMessage(message) {
         let receivedKeys = JSON.parse(message);
         console.log("message received: " + receivedKeys);
-        pressKey(receivedKeys, true);
+        pressKeyRemote(receivedKeys, true);
     }
 
     const programmablePiano = document.getElementById("programmable-piano");
 
     programmablePiano.addEventListener("note-down", (event) => {
         console.log("note-down", event.detail);
-        pressKeyInteractive(event.detail, true);
+        pressKeyLocal(event.detail, true);
     });
 
     programmablePiano.addEventListener("note-up", (event) => {
         console.log("note-up", event.detail);
-        pressKeyInteractive(event.detail, false);
+        pressKeyLocal(event.detail, false);
     });
 
     const sampler = new Tone.Sampler({
@@ -236,7 +236,7 @@
         baseUrl: "https://tonejs.github.io/audio/salamander/"
     }).toDestination();
 
-    function pressKeyInteractive(key, isDown) {
+    function pressKeyLocal(key, isDown) {
         if (isDown) {
             if (webRTCAdaptor.remotePeerConnection[roomId] !== undefined) {
                 webRTCAdaptor.sendData(roomId, JSON.stringify([key]));
@@ -249,10 +249,7 @@
         }
     }
 
-    function pressKey(keyMap, isReceived) {
-        if (!isReceived && webRTCAdaptor.remotePeerConnection[roomId] !== undefined) {
-            webRTCAdaptor.sendData(roomId, JSON.stringify(keyMap));
-        }
+    function pressKeyRemote(keyMap) {
         for (let keyIndex in keyMap) {
             let key = keyMap[keyIndex];
             programmablePiano.setNoteDown(key.note, key.octave);
